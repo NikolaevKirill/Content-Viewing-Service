@@ -35,31 +35,54 @@ def show_picture(request):
 
     # Если запроса нет возвращаем случайное изображение
     if len(categories) == 0:
-        ids = [elem["id"] for elem in Images.objects.values("id")]
-        index_of_choose = random.choice(ids)
+        NumberOfShow = [
+            elem["NumberOfShows"] for elem in Images.objects.values("NumberOfShows")
+        ]
+        ids = [
+            elem["id"]
+            for i, elem in enumerate(Images.objects.values("id"))
+            if NumberOfShow[i] != 0
+        ]
 
-        # Обновление NumberOfShows
-        picture = Images.objects.get(id=index_of_choose)
-        picture.NumberOfShows -= 1
-        picture.save()
+        if len(ids) != 0:
+            index_of_choose = random.choice(ids)
 
-        url = Images.objects.get(id=index_of_choose)
-        return render(request, "search/show_picture.html", context={"URL": url})
+            # Обновление NumberOfShows
+            picture = Images.objects.get(id=index_of_choose)
+            picture.NumberOfShows -= 1
+            picture.save()
 
-    cross_indices = cross_categories(categories)
-    if len(cross_indices) == 0:
-        return render(request, "search/fail_response.html")
+            url = Images.objects.get(id=index_of_choose)
+            return render(request, "search/show_picture.html", context={"URL": url})
 
-    index_picture = random.choice(cross_indices)
-    id_picture = Images.objects.values("id")[index_picture]["id"]
+        else:
+            return render(request, "search/fail_response.html")
 
-    # Обновление NumberOfShows
-    picture = Images.objects.get(id=id_picture)
-    picture.NumberOfShows -= 1
-    picture.save()
-    url = Images.objects.get(id=id_picture)  # URL picture
+    else:
+        cross_indices = cross_categories(categories)
+        if len(cross_indices) == 0:
+            return render(request, "search/fail_response.html")
 
-    return render(request, "search/show_picture.html", context={"URL": url})
+        else:
+            NumberOfShow = [
+                elem["NumberOfShows"] for elem in Images.objects.values("NumberOfShows")
+            ]
+            valid_indices = [ind for ind in cross_indices if NumberOfShow[ind] != 0]
+
+            if len(valid_indices) != 0:
+                index_picture = random.choice(valid_indices)
+                id_picture = Images.objects.values("id")[index_picture]["id"]
+
+                # Обновление NumberOfShows
+                picture = Images.objects.get(id=id_picture)
+                picture.NumberOfShows -= 1
+                picture.save()
+
+                url = Images.objects.get(id=id_picture)  # URL picture
+                return render(request, "search/show_picture.html", context={"URL": url})
+
+            else:
+                return render(request, "search/fail_response.html")
 
 
 def cross_categories(search_categories):
@@ -78,7 +101,7 @@ def cross_categories(search_categories):
 
 
 def delete_db(request):
-    #  При выходе очищаем базу данных
+    #  При выходе необходимо очистить базу данных
     Images.objects.all().delete()
 
     return render(request, "search/ThankYou.html")
