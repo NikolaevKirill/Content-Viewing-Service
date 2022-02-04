@@ -6,9 +6,9 @@
 ```shell
 source myenv/bin/activate
 pip install -r requirements.txt
-python manage.py makemigrations
-python manage.py migrate
-python manage.py runserver 
+python ContentViewingService/manage.py makemigrations
+python ContentViewingService/manage.py migrate
+python ContentViewingService/manage.py runserver 
 ```
 
 Сервис будет доступен на `http://127.0.0.1:8000/`
