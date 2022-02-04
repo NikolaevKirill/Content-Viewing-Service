@@ -1,15 +1,19 @@
-from django.shortcuts import render
-from .models import Images
+"""This module does Content-Viewing-Service"""
+
 import csv
 import random
+from django.shortcuts import render
+from .models import Images
 
 
 def index(request):
-
+    """
+    Функция загружает файл конфигурации, если база данных пуста и вызывает шаблон главной страницы
+    """
     # Если база данных пустая, значит, мы запустили сайт, поэтому загрузим файл конфигурации
     if len(Images.objects.all()) == 0:
-        with open("static/configurations.csv") as f:
-            reader = csv.reader(f)
+        with open("static/configurations.csv", encoding="utf8") as file:
+            reader = csv.reader(file)
             for line in reader:
                 line = line[0].split(";")
                 images = Images(URL=line[0], NumberOfShows=line[1], categories=line[2:])
@@ -19,13 +23,16 @@ def index(request):
 
 
 def show_picture(request):
-
+    """
+    Функция передаёт URL подходящего для запроса изображения в HTML-шаблоны или вызывает шаблоны,
+    с сообщением об отсутствии подходящих изображений
+    """
     categories = request.GET.getlist("category")
     # Считываем категории в список, удаляем пустые категории
     indices = []  # Список с индексами незаполненных категорий
-
+    empty = [" ", ""]
     for i, category in enumerate(categories):
-        if category == " " or category == "":
+        if category in empty:
             indices.append(i)
 
     k = 0  # Количество удалённых пустых категорий
@@ -45,14 +52,14 @@ def show_picture(request):
         ]
 
         if len(ids) != 0:
-            index_of_choose = random.choice(ids)
+            id_picture = random.choice(ids)
 
             # Обновление NumberOfShows
-            picture = Images.objects.get(id=index_of_choose)
+            picture = Images.objects.get(id=id_picture)
             picture.NumberOfShows -= 1
             picture.save()
 
-            url = Images.objects.get(id=index_of_choose)
+            url = Images.objects.get(id=id_picture)
             return render(request, "search/show_picture.html", context={"URL": url})
 
         else:
@@ -86,6 +93,12 @@ def show_picture(request):
 
 
 def cross_categories(search_categories):
+    """
+    Функция определяет пересечения категорий запроса и изображений и возвращает
+    индексы пересекаемых изображений
+    :param search_categories: list, содержит категории запроса
+    :return: list, содержит индексы изображений пересекаемых с запросом
+    """
     # Возвращает список индексов изображений (не id, а индексы), похожих категориями на запрос
     search_categories = set(search_categories)
     cross = []
@@ -96,12 +109,14 @@ def cross_categories(search_categories):
         cross.append(len(categories & search_categories))
 
     # Возвращаем индексы только похожих на запрос изображений
-    indices = [i for i in range(len(cross))]
-    return [ind for i, ind in enumerate(indices) if cross[i] != 0]
+    return [i for i in range(len(cross)) if cross[i] != 0]
 
 
 def delete_db(request):
-    #  При выходе необходимо очистить базу данных
+    """
+    Функция удаляет все данные из базы данных
+    """
+
     Images.objects.all().delete()
 
     return render(request, "search/ThankYou.html")
