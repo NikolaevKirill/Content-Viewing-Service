@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4f6d0b2e-5c73-493c-a452-23c6849cc8ff" name="Changes" comment="Необходимо доделать:&#10;- загрузка CSV-файла&#10;- поиск и выдача изображения">
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/ContentViewingService/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/ContentViewingService/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/ContentViewingService/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/ContentViewingService/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/search/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/search/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/search/templates/search/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/search/templates/search/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/search/templates/search/show_picture.html" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/search/templates/search/show_picture.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/search/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/search/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ContentViewingService/search/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/ContentViewingService/search/views.py" afterDir="false" />
+    <list default="true" id="4f6d0b2e-5c73-493c-a452-23c6849cc8ff" name="Changes" comment="Corrections">
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
