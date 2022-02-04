@@ -5,21 +5,21 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Система просмотра контента</title>
+    <title>Изображение</title>
 </head>
 <body>
+
     <div style="text-align: center;">
-        <h1>Добро пожаловать!</h1>
-        <p>Введите категории картинок для поиска:</p>
+        <h2>Найденное изображение:</h2>
+        <img src={{ URL }} width="600" height="400" class="rounded">
     </div>
 
-    <div class="text-center">
-        <img src="..." class="rounded" alt="...">
+    <div style="text-align: center;">
+        <form action="{% url 'home'%}" method="get">
+          <button type="submit">Вернуться на главную страницу</button>
+        </form>
     </div>
 
-    <!-- дописать action, когда появится контроллер следующей формы -->
-    <form action="" method="GET">
 
-    </form>
 </body>
 </html>

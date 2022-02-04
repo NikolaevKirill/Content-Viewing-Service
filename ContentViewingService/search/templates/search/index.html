@@ -12,7 +12,7 @@
         <h1>Добро пожаловать!</h1>
         <p>Введите категории изображения:</p>
     </div>
-    <!-- дописать action, когда появится контроллер следующей формы -->
+
     <div style="text-align: center;">
         <form action="{% url 'show_picture'%}">
             <textarea name="category" rows="1" cols="50"></textarea>
@@ -36,6 +36,14 @@
             <textarea name="category" rows="1" cols="50"></textarea>
             <br><br>
             <input type="submit" value="Поиск">
+            <br><br>
+        </form>
+    </div>
+
+    <div style="text-align: center;">
+        <p>Перед выходом пожалуйста очистите базу данных:</p>
+        <form action="{% url 'del_db'%}">
+          <button type="submit">Очистить базу данных</button>
         </form>
     </div>
 </body>
