@@ -1,6 +1,3 @@
 from django.urls import path, include
 
-urlpatterns = [
-    path('', include('search.urls'))
-]
-
+urlpatterns = [path("", include("search.urls"))]
