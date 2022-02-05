@@ -3,7 +3,6 @@
 
 Запуск на Windows:
 ```shell
-cd Content-Viewing-Service
 python -m venv venv
 virtualenv --system-site-packages -p python ./venv
 python setup.py install
@@ -16,7 +15,6 @@ python manage.py runserver
 
 Запуск на Linux:
 ```shell
-cd Content-Viewing-Service
 python3 -m venv venv
 source venv/bin/activate
 python setup.py install
