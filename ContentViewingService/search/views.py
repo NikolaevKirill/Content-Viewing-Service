@@ -1,105 +1,32 @@
-"""This module does Content-Viewing-Service"""
-
-import csv
 import random
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
 from .models import Images
 
 
-def index(request):
+def get_categories(request):
     """
-    Функция загружает файл конфигурации, если база данных пуста и вызывает шаблон главной страницы
+    Функция принимает HTTP GET запрос и возвращает категории запрашиваемого изображения
+    :param request: HTTP GET запрос
+    :return: list, список с категориями
     """
-    # Если база данных пустая, значит, мы запустили сайт, поэтому загрузим файл конфигурации
-    if len(Images.objects.all()) == 0:
-        with open("static/configurations.csv", encoding="utf8") as file:
-            reader = csv.reader(file)
-            for line in reader:
-                line = line[0].split(";")
-                images = Images(URL=line[0], NumberOfShows=line[1], categories=line[2:])
-                images.save()
-
-    return render(request, "search/index.html")
-
-
-def show_picture(request):
-    """
-    Функция передаёт URL подходящего для запроса изображения в HTML-шаблоны или вызывает шаблоны,
-    с сообщением об отсутствии подходящих изображений
-    """
-    categories = request.GET.getlist("category")
-    # Считываем категории в список, удаляем пустые категории
-    indices = []  # Список с индексами незаполненных категорий
-    empty = [" ", ""]
-    for i, category in enumerate(categories):
-        if category in empty:
-            indices.append(i)
-
-    k = 0  # Количество удалённых пустых категорий
-    for i in indices:
-        del categories[i - k]
-        k += 1
-
-    # Если запроса нет возвращаем случайное изображение
-    if len(categories) == 0:
-        NumberOfShow = [
-            elem["NumberOfShows"] for elem in Images.objects.values("NumberOfShows")
-        ]
-        ids = [
-            elem["id"]
-            for i, elem in enumerate(Images.objects.values("id"))
-            if NumberOfShow[i] != 0
-        ]
-
-        if len(ids) != 0:
-            id_picture = random.choice(ids)
-
-            # Обновление NumberOfShows
-            picture = Images.objects.get(id=id_picture)
-            picture.NumberOfShows -= 1
-            picture.save()
-
-            url = Images.objects.get(id=id_picture)
-            return render(request, "search/show_picture.html", context={"URL": url})
-
-        else:
-            return render(request, "search/fail_response.html")
-
+    category = request.GET.getlist("category")
+    # Если не одна категория, то категории выделаются по "category[]"
+    if len(category) == 0:
+        categories = request.GET.getlist("category[]")
+        return categories
     else:
-        cross_indices = cross_categories(categories)
-        if len(cross_indices) == 0:
-            return render(request, "search/fail_response.html")
-
-        else:
-            NumberOfShow = [
-                elem["NumberOfShows"] for elem in Images.objects.values("NumberOfShows")
-            ]
-            valid_indices = [ind for ind in cross_indices if NumberOfShow[ind] != 0]
-
-            if len(valid_indices) != 0:
-                index_picture = random.choice(valid_indices)
-                id_picture = Images.objects.values("id")[index_picture]["id"]
-
-                # Обновление NumberOfShows
-                picture = Images.objects.get(id=id_picture)
-                picture.NumberOfShows -= 1
-                picture.save()
-
-                url = Images.objects.get(id=id_picture)  # URL picture
-                return render(request, "search/show_picture.html", context={"URL": url})
-
-            else:
-                return render(request, "search/fail_response.html")
+        return category
 
 
 def cross_categories(search_categories):
     """
     Функция определяет пересечения категорий запроса и изображений и возвращает
-    индексы пересекаемых изображений
+    id пересекаемых изображений
     :param search_categories: list, содержит категории запроса
-    :return: list, содержит индексы изображений пересекаемых с запросом
+    :return: list, с индексами (не id), соответствующими изображениям в Images.objects.values
+    :return: list, содержит словари dict{'id':id} изображений, подходящих запросу
     """
-    # Возвращает список индексов изображений (не id, а индексы), похожих категориями на запрос
+
     search_categories = set(search_categories)
     cross = []
 
@@ -108,15 +35,96 @@ def cross_categories(search_categories):
         categories = set(elem["categories"].split("'")[1::2])
         cross.append(len(categories & search_categories))
 
-    # Возвращаем индексы только похожих на запрос изображений
-    return [i for i in range(len(cross)) if cross[i] != 0]
+    # Возвращаем id только похожих на запрос изображений
+    ids = Images.objects.values("id")
+    cross_inds = [i for i in range(len(cross)) if cross[i] != 0]
+    return cross_inds, [ids[ind] for ind in cross_inds]
 
 
-def delete_db(request):
+def val_ids(challenger_ids, indices=None):
     """
-    Функция удаляет все данные из базы данных
+    Функция принимает список с dict{'id':id} и список с индексами этих id в Images.objects.values
+    и возвращает список id изображений,которые необходимо показать
+    :param challenger_ids: список с dict{'id':id}
+    :param indices: list, список с индексами (не id),
+    :return: list, список id изображений
     """
 
-    Images.objects.all().delete()
+    number_of_show = [
+        elem["number_of_show"] for elem in Images.objects.values("number_of_show")
+    ]
+    if indices is None:
+        valid_ids = [
+            elem["id"]
+            for i, elem in enumerate(challenger_ids)
+            if number_of_show[i] != 0
+        ]
+    else:
+        valid_ids = [
+            elem["id"]
+            for i, elem in enumerate(challenger_ids)
+            if number_of_show[indices[i]] != 0
+        ]
+    return valid_ids
 
-    return render(request, "search/ThankYou.html")
+
+def choose_url(valid_ids):
+    """
+    Функция принимает id соответствующих запросу изображений и возвращает url изображения для показа.
+    Также уменьшает у выбранного изображения на единицу количество раз необходимых к показу
+    :param valid_ids: list, список id соответствующих запросу изображений
+    :return: str, url выбранного изображения
+    """
+    id_picture = random.choice(valid_ids)
+
+    # Обновление number_of_show
+    picture = Images.objects.get(id=id_picture)
+    picture.number_of_show -= 1
+    picture.save()
+
+    url = Images.objects.get(id=id_picture)
+    return url
+
+
+def choose_picture(categories):
+    """
+    Функция принимает запрашиваемые категории и возвращает либо url в случае наличия подходящего изображения,
+    либо None в случае отсутствия подходящего изображения
+    :param categories: list, запрашиваеме категории
+    :return: str, url изображения или None
+    """
+    # Если запроса нет, возвращаем случайное изображение
+    if len(categories) == 0:
+
+        valid_ids = val_ids(Images.objects.values("id"))
+        if len(valid_ids) != 0:
+            url = choose_url(valid_ids)
+            return url
+        else:
+            return None
+    # Если запрос есть, ищем подходящее изображение
+    else:
+        cross_inds, cross_ids = cross_categories(categories)
+        if len(cross_ids) != 0:
+            valid_ids = val_ids(cross_ids, indices=cross_inds)
+            if len(valid_ids) != 0:
+                url = choose_url(valid_ids)
+                return url
+            else:
+                return None
+        else:
+            return None
+
+
+def index(request):
+    """
+    Функция вызывает шаблон главной страницы при наличии подходящего изображения или
+    выдает сообщение об отсутствии подходящего контента.
+    """
+    categories = get_categories(request)
+    url = choose_picture(categories)
+
+    if url is None:
+        return HttpResponse("204")
+    else:
+        return render(request, "search/index.html", {"url": url})

@@ -2,9 +2,9 @@ from django.db import models
 
 
 class Images(models.Model):
-    URL = models.CharField("URL", max_length=250)
-    NumberOfShows = models.IntegerField("NumberOfShows")
-    categories = models.CharField("Categories", max_length=250)
+    url = models.CharField("url", max_length=250)
+    number_of_show = models.IntegerField("number_of_show")
+    categories = models.CharField("categories", max_length=250)
 
     def __str__(self):
-        return self.URL
+        return self.url
